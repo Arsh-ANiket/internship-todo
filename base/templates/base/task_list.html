@@ -1,17 +1,103 @@
-{% extends 'base/main.html' %} {% block content %}
+{% extends 'base/main.html' %}
+{% block content %}
 
-<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+<style>
+    /* CSS for completed tasks section */
+    .completed-tasks {
+        margin-top: 20px;
+    }
+
+    .completed-tasks h5 {
+        color: #4CAF50;
+    }
+
+    .completed-tasks ul {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .completed-tasks li {
+        padding: 5px 0;
+        color: #666;
+    }
+
+    /* CSS for task list */
+    .task-wrapper {
+        border: 1px solid #ddd;
+        background-color: #f9f9f9;
+        margin-bottom: 5px;
+        padding: 10px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .task-title {
+        flex-grow: 1;
+        margin: 0;
+    }
+
+    .task-controls {
+        flex-shrink: 0;
+        display: flex;
+        align-items: center;
+    }
+
+    .task-controls a {
+        color: #999;
+        text-decoration: none;
+        margin-left: 10px;
+    }
+
+    .task-controls a:hover {
+        color: #e53935;
+    }
+
+    .handle {
+        cursor: move;
+    }
+
+    .task-complete-icon {
+        color: #4CAF50;
+        margin-right: 5px;
+    }
+
+    .task-incomplete-icon {
+        color: #e53935;
+        margin-right: 5px;
+    }
+
+    /* Add some spacing */
+    .task-items-wrapper {
+        margin-bottom: 20px;
+    }
+
+    .card {
+        background-color: #fff;
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    }
+
+    /* Stretch the center display */
+    
+</style>
+
 <div class="header-bar">
     <div>
         <h1>Hello {{request.user|title}}</h1>
-        <h3 style="margin:0">You have <i>{{count}}</i> incomplete task{{ count|pluralize:"s" }}</h3>
+        <h3 style="margin:0">You have <i>{{ incomplete_tasks_count }}</i> incomplete task{{ incomplete_tasks_count|pluralize:"s" }}</h3>
     </div>
+    {% if incomplete_tasks_count == 0 and completed_tasks.count == 0 %}
+    <a href="{% url 'task-create' %}">Add Task</a>
+    {% endif %}
 
     {% if request.user.is_authenticated %}
-    <a href="{% url 'logout' %}">Logout</a> {% else %}
-    <a href="{% url 'login' %}">Login</a> {% endif %}
+    <a href="{% url 'logout' %}">Logout</a>
+    {% else %}
+    <a href="{% url 'login' %}">Login</a>
+    {% endif %}
 </div>
-
 
 <div id="search-add-wrapper">
     <form method="GET" style="display: flex;">
@@ -23,38 +109,61 @@
     {% endif %}
 </div>
 
-
 <!-- Hidden form. Form submits new item positions -->
 <form style="display: none;" id="reorderForm" method="post" action="{% url 'task-reorder' %}">
     {% csrf_token %}
     <input type="hidden" id="positionInput" name="position">
 </form>
 
-
-<div id="tasklist" class="task-items-wrapper">
-    {% for task in tasks %}
-    <div class="task-wrapper" data-position="{{task.pk}}">
-        <div class="task-title">
-            {% if task.complete %}
-            <div class="task-complete-icon"></div>
-            <i><s><a href="{% url 'task-update' task.id %}">{{task}}</a></s></i> {% else %}
-            <div class="task-incomplete-icon"></div>
-            <a href="{% url 'task-update' task.id %}">{{task}}</a> {% endif %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-8">
+            <div class="task-items-wrapper" id="tasklist">
+                {% for task in tasks %}
+                <div class="task-wrapper" data-position="{{task.pk}}">
+                    <div class="task-title">
+                        {% if task.complete %}
+                        <div class="task-complete-icon"><i class="fas fa-check-circle"></i></div>
+                        <i><s><a href="{% url 'task-update' task.id %}">{{task}}</a></s></i>
+                        {% else %}
+                        <div class="task-incomplete-icon"><i class="far fa-circle"></i></div>
+                        <a href="{% url 'task-update' task.id %}">{{task}}</a>
+                        {% endif %}
+                        - Created: {{ task.created_at|date:"F d, Y H:i" }}
+                    </div>
+                    <div class="task-controls">
+                        <a class="delete-link" href="{% url 'task-delete' task.id %}"><i class="fas fa-times"></i></a>
+                        <span class="handle"><i class="fas fa-grip-vertical"></i></span>
+                    </div>
+                </div>
+                {% empty %}
+                <div style="text-align: center; padding-bottom: 10px; line-height: 1em;">
+                    <h3>No new tasks are created.</h3>
+                    <h3>Create a <a style="text-decoration: none; color: #e53935;" href="{% url 'task-create' %}">New task</a> ! </h3>
+                </div>
+                {% endfor %}
+            </div>
         </div>
-        <div class="task-controls">
-            <a class="delete-link" href="{% url 'task-delete' task.id %}">&#215;</a>
-            <span class="handle">&nbsp;&#10247;</span>
+        <div class="col-4">
+            <div class="card completed-tasks">
+                <div class="card-body">
+                    <h5 class="card-title">Completed Tasks</h5>
+                    {% if completed_tasks %}
+                    <ul>
+                        {% for task in completed_tasks %}
+                        <li>{{ task }} - Completed: {{ task.completed_at|date:"F d, Y H:i" }}</li>
+                        {% endfor %}
+                    </ul>
+                    {% else %}
+                    <p>No completed tasks.</p>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
-
-    {% empty %}
-    <div style="text-align: center; padding-bottom: 10px; line-height: 1em;">
-        <h3>No new tasks are created.</h3>
-        <h3>Create a <a style="text-decoration: none; color: #e53935;" href="{% url 'task-create' %}">New task</a> ! </h3>
-    </div>
-    {% endfor %}
 </div>
 
+<script src="https://cdn.jsdelivr.net/npm/sortablejs@latest/Sortable.min.js"></script>
 <script>
     var taskList = document.getElementById("tasklist");
     var reorderForm = document.getElementById("reorderForm");
@@ -64,7 +173,6 @@
         handle: '.handle',
         ghostClass: 'dropArea',
         chosenClass: 'selectedTask',
-
     });
 
     function reordering() {
@@ -78,7 +186,7 @@
         reorderForm.submit();
     }
 
-    document.ondrop = reordering
+    document.ondrop = reordering;
 </script>
 
 {% endblock content %}
