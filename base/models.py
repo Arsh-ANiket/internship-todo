@@ -14,7 +14,8 @@ class Task(models.Model):
     complete = models.BooleanField(default=False)
     created_at = models.DateTimeField(auto_now_add=True)
     completed_at = models.DateTimeField(null=True, blank=True)
-
+    start_time = models.DateTimeField(null=True, blank=True)
+    end_time = models.DateTimeField(null=True, blank=True)
     def __str__(self):
         return self.title
 

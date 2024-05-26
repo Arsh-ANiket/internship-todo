@@ -150,3 +150,8 @@ Thumbs.db #thumbnail cache on Windows
 
 # profiling data
 .prof
+
+
+#google calendar important stuff
+credentials.json
+token.json

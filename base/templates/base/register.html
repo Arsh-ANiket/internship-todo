@@ -1,6 +1,10 @@
 {% extends 'base/main.html' %}
 {% block content %}
-
+<style>.unique-link {
+    color: #e53935; /* Set a unique color */
+    font-weight: bold; /* Make it bold */
+    text-decoration: underline; /* Underline the text */
+}</style>
 <div class="header-bar">
     <h1>Register</h1>
 </div>
@@ -18,10 +22,6 @@
         {{form.password2}}
         <input style="margin-top:10px ;" class="button" type="submit" value="Register">
     </form>
-    <p>Already have an account? <a href="{% url 'login' %}">Login</a></p>
+    <p>Already have an account? <a class="unique-link" href="{% url 'login' %}">Login</a></p>
 </div>
-
-
-
-
 {% endblock content %}

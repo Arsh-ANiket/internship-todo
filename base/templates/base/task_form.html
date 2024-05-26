@@ -1,18 +1,30 @@
 {% extends 'base/main.html' %}
 {% block content %}
-
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <div class="header-bar">
     <a href="{% url 'tasks' %}">&#8592; Back</a>
 </div>
-
-
 <div class="card-body">
     <form method="POST" action="">
         {% csrf_token %}
-        {{form.as_p}}
+        {{ form.as_p }}
+
         <input class="button" type="submit" value="Submit">
     </form>
 </div>
 
+<script>
+  flatpickr("#id_start_time", {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+    time_24hr: true
+  });
 
+  flatpickr("#id_end_time", {
+    enableTime: true,
+    dateFormat: "Y-m-d H:i",
+    time_24hr: true
+  });
+</script>
 {% endblock content %}
